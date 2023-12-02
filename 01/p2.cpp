@@ -40,9 +40,9 @@ char find_first_number(std::string str, bool reversed) {
     }
     return '\0';
 }
-int main(void) {
+int main(int argc, char* argv[]) {
     // open the file that will be reading the input from
-    std::ifstream file("input.txt");
+    std::ifstream file(argv[1]);
     
     unsigned long sum = 0;
     std::string calibration;

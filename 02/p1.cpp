@@ -86,9 +86,9 @@ int bag_parser(std::string str) {
     }
     return id;
 }
-int main(void) {
+int main(int argc, char*argv[]) {
     // open the file that will be reading the input from
-    std::ifstream file("input.txt");
+    std::ifstream file(argv[1]);
     
     unsigned long sum = 0;
     std::string calibration;
@@ -104,8 +104,6 @@ int main(void) {
     while(getline(file, line)) {
         // bag_parser returns the id of the line if valid 0 if invalid
         sum +=bag_parser(line);
-        
-        line.clear();
     }
     std::cout << "the total sum is " << sum << std::endl;
     return 0;

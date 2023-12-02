@@ -13,9 +13,9 @@ char find_first_number(std::string str) {
     }
     return '\0';
 }
-int main(void) {
+int main(int argc, char* argv[]) {
     // open the file that will be reading the input from
-    std::ifstream file("input_short.txt");
+    std::ifstream file(argv[1]);
     
     unsigned long sum = 0;
     std::string calibration;
