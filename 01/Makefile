@@ -1,6 +1,6 @@
 EXE = p1 p2
 OBJECTS = p1.o p2.o
-CFLAGS = -g
+CFLAGS = -g -Wall
 all: p1 p2
 
 p2 : p2.o
