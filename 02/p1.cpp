@@ -1,9 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-#include <string.h>
 
 #define FAILED_TO_OPEN_FILE -1
 #define FAILED_TO_READ_NUMBER -2
