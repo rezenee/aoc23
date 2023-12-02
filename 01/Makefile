@@ -1,11 +1,11 @@
-EXE = 01
-OBJECTS = 01.o
+EXE = 01_p2
+OBJECTS = 01_p2.o
 CFLAGS = -g
-01 : 01.o
+01_p2 : 01_p2.o
 	g++ -o $(EXE) $(OBJECTS) $(CFLAGS)
 
-01.o : 01.cpp
-	g++ $(CFLAGS) -c -o $(OBJECTS) 01.cpp
+01_p2.o : 01_p2.cpp
+	g++ $(CFLAGS) -c -o $(OBJECTS) 01_p2.cpp
 
 .PHONY : clean
 clean :

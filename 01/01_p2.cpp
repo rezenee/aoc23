@@ -5,17 +5,44 @@
 
 #define FAILED_TO_OPEN_FILE -1
 #define FAILED_TO_READ_NUMBER -2
-char find_first_number(std::string str) {
+char find_first_number(std::string str, bool reversed) {
+    std::string number_chunk;
+    std::string valid_strings[] = {
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine"
+    };
+    if(reversed) {
+        for(std::string& str: valid_strings) {
+            reverse(str.begin(), str.end());
+        }
+    }
     for(char &c: str) {
         if('0' <= c && c <= '9') {
             return c;
         }
+        else {
+            number_chunk.push_back(c);
+        }
+        for(int i = 0; i < 9; i++) {
+
+            if(number_chunk.find(valid_strings[i]) != std::string::npos ) {
+                return i+49;
+            }
+        }
+        
     }
     return '\0';
 }
 int main(void) {
     // open the file that will be reading the input from
-    std::ifstream file("input_short.txt");
+    std::ifstream file("input.txt");
     
     unsigned long sum = 0;
     std::string calibration;
@@ -32,7 +59,7 @@ int main(void) {
         // reset the string that holds each lines found number
         calibration.clear();
         // if number is failed to be found quit
-        if( (found = find_first_number(line)) == '\0') {
+        if( (found = find_first_number(line, 0)) == '\0') {
             std::cerr << "error finding number in line" << std::endl;
             exit(FAILED_TO_READ_NUMBER);
         }    
@@ -40,7 +67,7 @@ int main(void) {
         // reverse the string to find the last number in practice
         std::reverse(line.begin(), line.end());
         // if number is failed to be found quit
-        if( (found = find_first_number(line)) == '\0') {
+        if( (found = find_first_number(line, 1)) == '\0') {
             std::cerr << "error finding number in line" << std::endl;
             exit(FAILED_TO_READ_NUMBER);
         }
