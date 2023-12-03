@@ -1,20 +1,20 @@
 EXE = p1 p2
 OBJECTS = p1.o p2.o
-CFLAGS = -g -Wall
-all: p1 p2
+CXXFLAGS ?= -g -Wall
+all: $(EXE)
 
 p2 : p2.o
-	g++ -o p2 p2.o $(CFLAGS)
+	$(CXX) -o p2 p2.o $(CXXFLAGS)
 
 p2.o : p2.cpp
-	g++ $(CFLAGS) -c -o p2.o p2.cpp
+	$(CXX) $(CXXFLAGS) -c -o p2.o p2.cpp
 
 p1 : p1.o
-	g++ -o p1 p1.o $(CFLAGS)
+	$(CXX) -o p1 p1.o $(CXXFLAGS)
 
 p1.o : p1.cpp
-	g++ $(CFLAGS) -c -o p1.o p1.cpp
+	$(CXX) $(CXXFLAGS) -c -o p1.o p1.cpp
 
-.PHONY : clean
+.PHONY : clean all
 clean :
 	rm -f $(EXE) $(OBJECTS)
