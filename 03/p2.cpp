@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <cctype>
 #include "structs.h"
 #define FAILED_TO_OPEN_FILE -1
 
@@ -12,7 +13,7 @@ void parse_line(std::string line, std::vector<part_num>& part_nums,
     // Iterate through every char in the line.
     for(char &c: line) {
         // If the char is a number.
-        if('0' <= c && c <= '9') {
+        if(std::isdigit(c)) {
             // If a new number set the start pos to the current pos. 
             if(!reading_number) {
                 start_pos = pos;
@@ -28,7 +29,7 @@ void parse_line(std::string line, std::vector<part_num>& part_nums,
             symbols.push_back(sym);
         }
         // If reading_number but the char isn't a number, means done reading.
-        if(reading_number && !('0' <= c && c <='9')) {
+        if(reading_number && !std::isdigit(c)) {
             // Add the number to the vector and reset state.
             part_num num = {start_pos, y, num_len, std::stoi(char_number)};
             part_nums.push_back(num);

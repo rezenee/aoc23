@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-
+#include <cctype>
 #define FAILED_TO_OPEN_FILE -1
 #define FAILED_TO_READ_NUMBER -2
 
@@ -17,7 +17,7 @@ char find_first_number(std::string str, bool reversed) {
     std::string number_chunk;
     for(char &c: str) {
         // if finding real digit return immediately
-        if('0' <= c && c <= '9') return c;
+        if(std::isdigit(c)) return c;
         // begin building the word out of letters
         else number_chunk.push_back(c);
         // As you are building the number check if it finds a complete word.

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <cctype>
 
 #define FAILED_TO_OPEN_FILE -1
 #define FAILED_TO_READ_NUMBER -2
@@ -11,7 +12,7 @@
 int find_id(std::string str) {
     std::string char_number;
     for(char &c: str) {
-        if('0' <= c && c <= '9') char_number.push_back(c);
+        if(std::isdigit(c)) char_number.push_back(c);
         if(c == ':') break;
     }
     return std::stoi(char_number);
@@ -27,7 +28,7 @@ int bag_parser(std::string str) {
     int found_number;
     for(char &c: str) {
         // indicate that you are have hit a new number to read or still inside
-        if('0' <= c && c <= '9') {
+        if(std::isdigit(c)) {
             char_number.push_back(c);
             within_number = 1;
             continue;

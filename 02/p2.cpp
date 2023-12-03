@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-
+#include <cctype>
 #define FAILED_TO_OPEN_FILE -1
 
 int bag_parser(std::string str) {
@@ -11,7 +11,7 @@ int bag_parser(std::string str) {
     // iterate through each char of game hand
     for(char &c: str) {
         // indicate that you are have hit a new number to read or still inside
-        if('0' <= c && c <= '9') {
+        if(std::isdigit(c)) {
             char_number.push_back(c);
             within_number = true;
             continue;

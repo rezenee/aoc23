@@ -1,13 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-
+#include <cctype>
 #define FAILED_TO_OPEN_FILE -1
 #define FAILED_TO_READ_NUMBER -2
 
 char find_first_number(std::string str) {
     for(char &c: str) {
-        if('0' <= c && c <= '9') return c;
+        if(std::isdigit(c)) return c;
     }
     std::cerr << "Error finding number in line." << std::endl;
     exit(FAILED_TO_READ_NUMBER);
