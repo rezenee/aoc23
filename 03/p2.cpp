@@ -1,36 +1,26 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-
+#include "structs.h"
 #define FAILED_TO_OPEN_FILE -1
-typedef struct {
-    int x;
-    int y; 
-    int l;
-    int number;
-    bool read = false;
-} part_num;
-typedef struct {
-    int x;
-    int y;
-} symbol;
+
 void parse_line(std::string line, std::vector<part_num>& part_nums, 
                 std::vector<symbol>& symbols, int y ) {
     bool reading_number = false;
-    int start_pos = 0, number_length = 0, pos = 0;
+    int start_pos = 0, num_len = 0, pos = 0;
     std::string char_number;
     // Iterate through every char in the line.
     for(char &c: line) {
         // If the char is a number.
         if('0' <= c && c <= '9') {
-            // If not already reading, set the beginning position of the number.
+            // If a new number set the start pos to the current pos. 
             if(!reading_number) {
                 start_pos = pos;
                 reading_number = true;
             }
             // Add this char to string construction of the number.
             char_number.push_back(c);
-            number_length++;
+            num_len++;
         }
         // If it is a gear add it to the vector. 
         if(c == '*') {
@@ -40,23 +30,22 @@ void parse_line(std::string line, std::vector<part_num>& part_nums,
         // If reading_number but the char isn't a number, means done reading.
         if(reading_number && !('0' <= c && c <='9')) {
             // Add the number to the vector and reset state.
-            part_num num = {start_pos, y, number_length, std::stoi(char_number)};
+            part_num num = {start_pos, y, num_len, std::stoi(char_number)};
             part_nums.push_back(num);
             char_number.clear();
-            number_length = 0;
+            num_len = 0;
             reading_number = false;
         }
         pos++;
     }
     // if the last char read was a number make sure to add it before returning.
     if(reading_number) {
-        part_num num = {start_pos, y, number_length, std::stoi(char_number)};
+        part_num num = {start_pos, y, num_len, std::stoi(char_number)};
         part_nums.push_back(num);
     }
 }
-
 int main(int argc, char*argv[]) {
-    // Open the file that will be reading the input from.
+    // Open the file that the input will be read from.
     std::ifstream file(argv[1]);
     if(!file.is_open()) {
         std::cerr << "Unable to open file\n";
@@ -78,12 +67,11 @@ int main(int argc, char*argv[]) {
         // Iterate through every part number.
         for(part_num &p: part_nums) {
             // If the part number is close enough.
-            if(p.y == s.y || p.y == s.y-1 || p.y == s.y+1) {
-                if(p.x-1 <= s.x && s.x <= p.x+ p.l) {
-                    // Add the part number to the count and gear ratio.
-                    count++;
-                    gear_ratio *= p.number;
-                }
+            if( (p.y == s.y || p.y == s.y-1 || p.y == s.y+1) && 
+                (p.x-1 <= s.x && s.x <= p.x+ p.l) ) {
+                // Add this part numbers data. 
+                gear_ratio *= p.number;
+                count++;
             }
         }
         // If the gear has exactly 2 part numbers add it to the sum.
