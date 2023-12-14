@@ -4,31 +4,36 @@
 #include <sstream>
 #include <cstdlib>
 
+void parse_string_into_vectors(const std::string& input, std::vector<unsigned>& vec1, std::vector<unsigned>& vec2) {
+    // go past the id number
+    std::string all_numbers = input.substr(input.find(':') + 1);
+
+    std::string first_numbers = all_numbers.substr(0, all_numbers.find('|'));
+    std::string second_numbers = all_numbers.substr(all_numbers.find('|')+1);
+    std::istringstream stream1(first_numbers);
+    std::istringstream stream2(second_numbers);
+
+    unsigned number;
+    while(stream1 >> number) {
+        vec1.push_back(number);
+    }
+    while(stream2 >> number) {
+        vec2.push_back(number);
+    }
+}
 // Compute value of lottery card.
 unsigned parse_line(std::string& line) {
     unsigned points = 0;
-    std::vector<int> winning_numbers;
-    int number;
-    std::istringstream stream(line);
-    // For each winning number of input add to vector of winning numbers.
-    while(stream >> number) {
-        winning_numbers.push_back(number);
-        // Remove whitespace between significant characters.
-        while(isspace(stream.peek())) stream.ignore();
-        // Indicates rest of string is lottery numbers.
-        if(stream.peek() == '|') {
-            stream.ignore();
-            break;
-        }
-    }
-    // For each lottery number search each winning number in look for a match.
-    // If there is a match update sum accordingly.
-    while(stream >> number) {
-        // Remove whitespace between significant characters.
-        while(isspace(stream.peek())) stream.ignore();
-        for(int num: winning_numbers) {
-            if(number == num) {
-                if(points) points*=2;
+    std::vector<unsigned> winning_numbers;
+    std::vector<unsigned>lotto_numbers;
+    parse_string_into_vectors(line, winning_numbers, lotto_numbers);
+    // for each winning number
+    for(unsigned i: winning_numbers) {
+        // check for each lotto number
+        for(unsigned j: lotto_numbers) {
+            // if they are a match add to the points
+            if(i == j) {
+                if(points) points *= 2;
                 else points = 1;
             }
         }
@@ -47,15 +52,18 @@ int main(int argc, char*argv[]) {
         std::cerr << "Unable to open file\n";
         std::exit(EXIT_FAILURE);
     }
-
-    unsigned total_points = 0;
-    // Add calculated points from each line to running total.
+    std::vector<std::string> lines;
+    // create a vector of lines from the file
     while(getline(file, line)) {
-        // skip past the card name
-        line = line.substr(line.find(':')+1);
-        total_points += parse_line(line);
+        lines.push_back(line);
     }
     file.close();
+    unsigned total_points = 0;
+    // Add calculated points from each line to running total.
+    for(std::string l : lines) {
+        // skip past the card name
+        total_points += parse_line(l);
+    }
     std::cout << "The total winning value is: " << total_points << std::endl;
     return 0;
 }
