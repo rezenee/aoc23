@@ -108,31 +108,65 @@ int check_if_bounded(std::vector<std::string>& lines, int y, int x, int directio
     // potential slips
     // - L J J . L
     // - J 7 F F 7
-    if(cur_loc == '|') {
-        // if you are going up or down then this is a potential slip
-        if(direction == 3 || direction == 1) {
-            // check to the left and right, if it is a real slip
-            if(lines[y][x-1] != '|' || lines[y][x+1] != '|' || lines[y][x-1]) {
-
+    // if you are going up for down check for slips on that axis
+    char besides_loc;
+    int north, east, south, west;
+    if(direction == 1 || direction == 3) {
+        // if cur_loc is left slip
+        if(cur_loc == 'J' || cur_loc == '7' || cur_loc == '|') {
+            // if cur_loc is the rightmost location impossible to have right slip
+            if(x >= lines[y].length()) return 1;
+            // check the right location if right slip exists.
+            besides_loc = lines[y][x+1];
+            if(besides_loc == 'L' || besides_loc == 'F' || besides_loc == '.' || besides_loc == '|') {
+                // Current tile is northern of previous tile.
+                if(direction == 1) {
+                       north = check_if_bounded(lines, y - 1, x, 1);
+                       if (!north) return 0;
+                }
+                // Current tile is southern of previous tile.
+                if(direction == 3) {
+                    south = check_if_bounded(lines, y + 1, x, 3);
+                    if (!south) return 0;
+                }
+            }
+        }
+        // if cur_loc is right slip
+        if(cur_loc == 'L' || cur_loc == 'F' || cur_loc == '|') {
+            // cur_loc is leftmost location impossible to have left slip
+            if(x == 0) return 1;
+            // check the left location if slip exists.
+            besides_loc = lines[y][x-1];
+            if(besides_loc == 'J' || besides_loc == '7' || besides_loc == '.' || besides_loc == '|') {
+               // Current tile is northern of previous tile.
+                if(direction == 1) {
+                       north = check_if_bounded(lines, y - 1, x, 1);
+                       if (!north) return 0;
+                }
+                // Current tile is southern of previous tile.
+                if(direction == 3) {
+                    south = check_if_bounded(lines, y + 1, x, 3);
+                    if (!south) return 0;
+                }
             }
         }
     }
 
     // anything here is on a '.' icon, or it is a pipe that is a slip
     if(direction != 3) {
-        int north = check_if_bounded(lines, y - 1, x, 1);
+        north = check_if_bounded(lines, y - 1, x, 1);
         if (!north) return 0;
     }
     if(direction != 4) {
-        int east = check_if_bounded(lines, y, x + 1, 2);
+        east = check_if_bounded(lines, y, x + 1, 2);
         if (!east) return 0;
     }
     if(direction != 1) {
-        int south = check_if_bounded(lines, y + 1, x, 3);
+        south = check_if_bounded(lines, y + 1, x, 3);
         if (!south) return 0;
     }
     if(direction != 2) {
-        int west = check_if_bounded(lines, y, x-1, 4);
+        west = check_if_bounded(lines, y, x-1, 4);
         if(!west) return 0;
     }
     // if after everything no edge is hit then it must be bounded
