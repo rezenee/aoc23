@@ -20,11 +20,10 @@ std::string intToHexString(int value) {
     ss << std::hex << value;  // Converts the integer to a hex string.
     return ss.str();
 }
-
 unsigned calculate_strength(std::string hand) {
     unsigned strength = 0;
     // A K Q J T 9 8 7 6 5 4 3 2
-    std::vector<char> letters = {'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J',
+    std::vector<char> letters = {'J', '2', '3', '4', '5', '6', '7', '8', '9', 'T',
                                  'Q', 'K', 'A'};
     // search through every letter in the hand
     std::string strength_str;
@@ -51,9 +50,14 @@ unsigned calculate_type(const std::string& hand) {
      */
     std::vector<parse_symbol> parsed_symbols;
     bool found = false;
+    unsigned extra_matches = 0;
     for(char c : hand) {
+        if(c == 'J') {
+            extra_matches++;
+        }
         for(parse_symbol& p: parsed_symbols) {
             found = false;
+            // get bonuses for jacks
             if(p.symbol == c) {
                 p.occurance++;
                 found = true;
@@ -63,6 +67,41 @@ unsigned calculate_type(const std::string& hand) {
         if(!found) {
             parse_symbol new_symbol = {c, 1};
             parsed_symbols.push_back(new_symbol);
+        }
+    }
+    // 22J33
+    parse_symbol* max = &parsed_symbols[0];
+    for(parse_symbol&p: parsed_symbols) {
+        if(p.occurance > max->occurance) {
+            max = &p;
+        }
+    }
+    // need to check for ties if there is a tie the other one should win
+    if(max->symbol == 'J') {
+        for(parse_symbol&p: parsed_symbols) {
+            if(p.symbol == 'J') continue;
+            if(p.occurance >= max->occurance) {
+                max = &p;
+            }
+        }
+    }
+    // you may have something like JA6TJ which max symbol is J, but it should
+    // switch to A or 6
+    parse_symbol* local_max = nullptr;
+    if(max->symbol == 'J' && max->occurance < 5) {
+        for(parse_symbol&p: parsed_symbols) {
+            if(p.symbol == 'J') continue;
+            if(!local_max) local_max = &p;
+            else if (p.occurance > local_max->occurance) local_max = &p;
+        }
+    }
+    if(local_max) max = local_max;
+    if(max->symbol != 'J') {
+        max->occurance += extra_matches;
+        // now you need to remove the matches for the 'J', since they get
+        // used up basically here
+        for(parse_symbol&p: parsed_symbols) {
+            if(p.symbol == 'J') p.occurance = 0;
         }
     }
     unsigned five_pairs = 0;
@@ -81,13 +120,14 @@ unsigned calculate_type(const std::string& hand) {
     if(four_pairs == 1) {
         return 6;
     }
-    if(three_pairs == 1 and two_pairs == 1) {
+    // 22J33
+    if(three_pairs >= 1 and two_pairs >= 1) {
         return 5;
     }
-    if(three_pairs == 1) {
+    if(three_pairs >= 1) {
         return 4;
     }
-    if(two_pairs == 2) {
+    if(two_pairs >= 2) {
         return 3;
     }
     if(two_pairs == 1) {
@@ -150,9 +190,6 @@ int main(int argc, char*argv[]) {
     std::vector<draw> draws;
     for(std::string& l : lines) {
         draws.push_back(parse_line(l));
-    }
-    for(draw& d: draws) {
-        std::cout << "card: " << d.hand << " type: " << d.type << " strength: " << d.strength << " buy: " << d.buy << std::endl;
     }
     std::sort(draws.begin(), draws.end(), compareDraws);
     std::cout << "SORTED" << std::endl;
