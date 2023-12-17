@@ -6,168 +6,79 @@
 #include <algorithm>
 
 typedef struct {
-    std::string hand;
-    unsigned strength;
-    unsigned type;
-    unsigned buy;
-} draw;
-typedef struct {
-    char symbol;
-    unsigned occurance;
-} parse_symbol;
-std::string intToHexString(int value) {
-    std::stringstream ss;
-    ss << std::hex << value;  // Converts the integer to a hex string.
-    return ss.str();
+    std::string id;
+    std::string left_id;
+    std::string right_id;
+    void* left;
+    void* right;
+} node;
+void skip_chars_stream(std::istringstream& stream, unsigned n) {
+    for(int i = 0; i < n; i++) {
+        stream.ignore();
+    }
 }
-unsigned calculate_strength(std::string hand) {
-    unsigned strength = 0;
-    // A K Q J T 9 8 7 6 5 4 3 2
-    std::vector<char> letters = {'J', '2', '3', '4', '5', '6', '7', '8', '9', 'T',
-                                 'Q', 'K', 'A'};
-    // search through every letter in the hand
-    std::string strength_str;
-    for(int i = 0; i < hand.length(); i++) {
-        // search to find which letter it is
-        for(int j = 0; j < letters.size(); j++) {
-            if(hand[i] == letters[j]) {
-                // to construct like 1 4 5 2 11 record
-                strength_str += intToHexString(j+1);
-            }
-        }
+std::string stream_to_string(std::istringstream& stream, unsigned n) {
+    std::string s;
+    for(int i = 0; i < n; i++){
+        s += stream.peek();
+        stream.ignore();
     }
-    return std::stoul(strength_str, nullptr, 16);
+    return s;
 }
-unsigned calculate_type(const std::string& hand) {
-    // TYPES strongest to weakest
-    /* Five of a kind: all five chars are the same
-     * Four of a kind: four cards have same label
-     * Full house: three chars are one char, two chars are other char
-     * Three of a kind: three chars are one char
-     * Two pair: two chars are one char, two chars are other char
-     * One pair: two chars are one char
-     * High card: all chars are unique
-     */
-    std::vector<parse_symbol> parsed_symbols;
-    bool found = false;
-    unsigned extra_matches = 0;
-    for(char c : hand) {
-        if(c == 'J') {
-            extra_matches++;
-        }
-        for(parse_symbol& p: parsed_symbols) {
-            found = false;
-            // get bonuses for jacks
-            if(p.symbol == c) {
-                p.occurance++;
-                found = true;
-                break;
-            }
-        }
-        if(!found) {
-            parse_symbol new_symbol = {c, 1};
-            parsed_symbols.push_back(new_symbol);
-        }
-    }
-    // 22J33
-    parse_symbol* max = &parsed_symbols[0];
-    for(parse_symbol&p: parsed_symbols) {
-        if(p.occurance > max->occurance) {
-            max = &p;
-        }
-    }
-    // need to check for ties if there is a tie the other one should win
-    if(max->symbol == 'J') {
-        for(parse_symbol&p: parsed_symbols) {
-            if(p.symbol == 'J') continue;
-            if(p.occurance >= max->occurance) {
-                max = &p;
-            }
-        }
-    }
-    // you may have something like JA6TJ which max symbol is J, but it should
-    // switch to A or 6
-    parse_symbol* local_max = nullptr;
-    if(max->symbol == 'J' && max->occurance < 5) {
-        for(parse_symbol&p: parsed_symbols) {
-            if(p.symbol == 'J') continue;
-            if(!local_max) local_max = &p;
-            else if (p.occurance > local_max->occurance) local_max = &p;
-        }
-    }
-    if(local_max) max = local_max;
-    if(max->symbol != 'J') {
-        max->occurance += extra_matches;
-        // now you need to remove the matches for the 'J', since they get
-        // used up basically here
-        for(parse_symbol&p: parsed_symbols) {
-            if(p.symbol == 'J') p.occurance = 0;
-        }
-    }
-    unsigned five_pairs = 0;
-    unsigned four_pairs = 0;
-    unsigned three_pairs = 0;
-    unsigned two_pairs = 0;
-    for(parse_symbol p: parsed_symbols) {
-        if(p.occurance == 5) five_pairs++;
-        if(p.occurance == 4) four_pairs++;
-        if(p.occurance == 3) three_pairs++;
-        if(p.occurance == 2) two_pairs++;
-    }
-    if(five_pairs == 1) {
-        return 7;
-    }
-    if(four_pairs == 1) {
-        return 6;
-    }
-    // 22J33
-    if(three_pairs >= 1 and two_pairs >= 1) {
-        return 5;
-    }
-    if(three_pairs >= 1) {
-        return 4;
-    }
-    if(two_pairs >= 2) {
-        return 3;
-    }
-    if(two_pairs == 1) {
-        return 2;
-    }
-    return 1;
-}
-bool compareDraws(const draw& a, const draw& b) {
-    if(a.type > b.type) {
-        return a.type > b.type;
-    }
-    else if(a.type < b.type) return false;
+// first read in the file the steps
+/* then read into the file first pass which will assign the id, left_id, and right_id
+ * from each line in the file into the vector of nodes.
+ * then you will do second pass, where for each left id and right id you search to assign
+ * the address of it.
+ * then, you start at AAA, following, until you hit ZZZ.
+ */
+// AAA = (BBB, CCC)
+node parse_node(std::string line) {
+    node read_node;
+    std::istringstream stream(line);
+    std::string id, left_id, right_id;
+    stream >> id;
+    skip_chars_stream(stream, 4);
+    left_id = stream_to_string(stream, 3);
+    skip_chars_stream(stream, 2);
+    right_id = stream_to_string(stream, 3);
+    std::cout << id << ":" << left_id << ":" << right_id << std::endl;
 
-    return a.strength > b.strength;
-    return false;
+    read_node.id = id;
+    read_node.left_id = left_id;
+    read_node.right_id = right_id;
+    return read_node;
 }
-draw parse_line(const std::string& input) {
-    draw hand_drawn;
-    std::istringstream stream(input);
-    std::string hand;
-    char c;
-    // read the hand
-    while(true) {
-        stream >> c;
-        hand += c;
-        if(stream.peek() == ' ') {
-            stream.ignore();
-            break;
+std::vector<node> parse_map(std::vector<std::string> lines) {
+    std::vector<node> map;
+    for(std::string line: lines) {
+        map.push_back(parse_node(line));
+    }
+    return map;
+}
+void study_map(std::vector<node>& map) {
+    unsigned id, left_id, right_id;
+    void* left = nullptr;
+    void* right = nullptr;
+    // go through each node
+    for(node& n : map) {
+        // find the location of left and right
+        for(node& search_node : map) {
+            if(search_node.id == n.left_id)  {
+                n.left = &search_node;
+            }
+            if(search_node.id == n.right_id)  {
+                n.right = &search_node;
+            }
         }
     }
-    unsigned buy;
-    // get the buy value
-    stream >> buy;
-    unsigned strength = calculate_strength(hand);
-    unsigned type = calculate_type(hand);
-    hand_drawn.strength = strength;
-    hand_drawn.type = type;
-    hand_drawn.buy = buy;
-    hand_drawn.hand = hand;
-    return hand_drawn;
+}
+std::vector<node*> find_start_positions(const std::vector<node>& map) {
+    std::vector<node*> positions;
+    for(const node& n: map) {
+        if(n.id[2] == 'A') positions.push_back(const_cast<node*>(&n));
+    }
+    return positions;
 }
 int main(int argc, char*argv[]) {
     if(argc != 2) {
@@ -187,21 +98,48 @@ int main(int argc, char*argv[]) {
         lines.push_back(line);
     }
     file.close();
-    std::vector<draw> draws;
-    for(std::string& l : lines) {
-        draws.push_back(parse_line(l));
+    std::string path = lines[0];
+    // make it so the input only has maps
+    lines.erase(lines.begin(), lines.begin()+2);
+    std::vector<node> map = parse_map(lines);
+
+    study_map(map);
+    // this is what ZZZ is deal with it
+    std::string destination_id = "ZZZ";
+    std::vector<node*> moving_nodes = find_start_positions(map);
+
+    bool searching = true;
+    long long number_of_searches = 0;
+    unsigned at_end;
+    unsigned max_found = 0;
+    unsigned amount_needed = moving_nodes.size();
+    while(searching) {
+        // repeatedly loop through the path
+        for(char c: path) {
+            at_end = 0;
+            // every new char of path is a search
+            // for each path that is being walked through
+            for(int i = 0; i < moving_nodes.size(); i++) {
+                if(moving_nodes[i]->id[2] == 'Z') {
+                    at_end++;
+                }
+                if(c == 'L') moving_nodes[i] = (node*) moving_nodes[i]->left;
+                else moving_nodes[i] = (node*) moving_nodes[i]->right;
+            }
+            if(at_end == moving_nodes.size()) {
+                searching = false;
+                break;
+            }
+            else {
+                if(at_end > max_found) {
+                    max_found = at_end;
+                }
+                std::cout << "search: " << number_of_searches << " found: " << at_end << " needed: "
+                          << amount_needed << " max_found: " << max_found << std::endl;
+                number_of_searches++;
+            }
+        }
     }
-    std::sort(draws.begin(), draws.end(), compareDraws);
-    std::cout << "SORTED" << std::endl;
-    std::reverse(draws.begin(), draws.end());
-    for(draw& d: draws) {
-        std::cout << "card: " << d.hand << " type: " << d.type << " strength: " << d.strength << " buy: " << d.buy << std::endl;
-    }
-    long long sum = 0;
-    for(int i = 0; i < draws.size(); i++) {
-        if(!sum) sum = draws[i].buy;
-        else sum += ((i+1) * draws[i].buy);
-    }
-    std::cout << "The sum of these hands is: " << sum << std::endl;
+    std::cout << "The number of maps it took was: " << number_of_searches << std::endl;
     return 0;
 }
