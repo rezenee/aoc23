@@ -1,4 +1,0 @@
-/home/rezenee/code/c/aoc23/10/CMakeFiles/p1.dir
-/home/rezenee/code/c/aoc23/10/CMakeFiles/p2.dir
-/home/rezenee/code/c/aoc23/10/CMakeFiles/edit_cache.dir
-/home/rezenee/code/c/aoc23/10/CMakeFiles/rebuild_cache.dir
