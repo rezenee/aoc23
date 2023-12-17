@@ -4,6 +4,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <algorithm>
+#include <numeric>
 
 typedef struct {
     std::string id;
@@ -80,6 +81,36 @@ std::vector<node*> find_start_positions(const std::vector<node>& map) {
     }
     return positions;
 }
+std::vector<unsigned long long> find_lcm(std::vector<node*> nodes, std::string path) {
+    std::vector<unsigned long long> multiples;
+    bool searching;
+    for(int i = 0; i < nodes.size(); i++) {
+        searching = true;
+        long long steps = 0;
+        while(searching) {
+            for (char c: path) {
+                // every new char of path is a search
+                // for each path that is being walked through
+                if (nodes[i]->id[2] == 'Z') {
+                    searching = false;
+                    break;
+                }
+                if (c == 'L') nodes[i] = (node *) nodes[i]->left;
+                else nodes[i] = (node *) nodes[i]->right;
+                steps++;
+            }
+        }
+        multiples.push_back(steps);
+    }
+    return multiples;
+}
+unsigned long long calculate_lcm(std::vector<unsigned long long> multiples) {
+    unsigned long long result = multiples[0];
+    for (size_t i = 1; i < multiples.size(); ++i) {
+        result = (result / std::gcd(result, multiples[i])) * multiples[i];
+    }
+    return result;
+}
 int main(int argc, char*argv[]) {
     if(argc != 2) {
         std::cerr << "Invalid arguments: ./p1 input.txt" << std::endl;
@@ -111,35 +142,35 @@ int main(int argc, char*argv[]) {
     bool searching = true;
     long long number_of_searches = 0;
     unsigned at_end;
-    unsigned max_found = 0;
-    unsigned amount_needed = moving_nodes.size();
-    while(searching) {
-        // repeatedly loop through the path
-        for(char c: path) {
-            at_end = 0;
-            // every new char of path is a search
-            // for each path that is being walked through
-            for(int i = 0; i < moving_nodes.size(); i++) {
-                if(moving_nodes[i]->id[2] == 'Z') {
-                    at_end++;
-                }
-                if(c == 'L') moving_nodes[i] = (node*) moving_nodes[i]->left;
-                else moving_nodes[i] = (node*) moving_nodes[i]->right;
-            }
-            if(at_end == moving_nodes.size()) {
-                searching = false;
-                break;
-            }
-            else {
-                if(at_end > max_found) {
-                    max_found = at_end;
-                }
-                std::cout << "search: " << number_of_searches << " found: " << at_end << " needed: "
-                          << amount_needed << " max_found: " << max_found << std::endl;
-                number_of_searches++;
-            }
-        }
-    }
-    std::cout << "The number of maps it took was: " << number_of_searches << std::endl;
+    std::vector<unsigned long long> multiples = find_lcm(moving_nodes, path);
+    long long lcm = calculate_lcm(multiples);
+//    while(searching) {
+//        // repeatedly loop through the path
+//        for(char c: path) {
+//            at_end = 0;
+//            // every new char of path is a search
+//            // for each path that is being walked through
+//            for(int i = 0; i < moving_nodes.size(); i++) {
+//                if(moving_nodes[i]->id[2] == 'Z') {
+//                    at_end++;
+//                }
+//                if(c == 'L') moving_nodes[i] = (node*) moving_nodes[i]->left;
+//                else moving_nodes[i] = (node*) moving_nodes[i]->right;
+//            }
+//            if(at_end == moving_nodes.size()) {
+//                searching = false;
+//                break;
+//            }
+//            else {
+//                if(at_end > max_found) {
+//                    max_found = at_end;
+//                }
+//                std::cout << "search: " << number_of_searches << " found: " << at_end << " needed: "
+//                          << amount_needed << " max_found: " << max_found << std::endl;
+//                number_of_searches++;
+//            }
+//        }
+//    }
+    std::cout << "The number of maps it took was: " << lcm << std::endl;
     return 0;
 }
